@@ -2,21 +2,718 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Prediction Result</title>
+  <title>Prediction Result - Sonar Analytics</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --primary-color: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary-color: #8b5cf6;
+      --accent-color: #06b6d4;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --error-color: #ef4444;
+      --rock-color: #10b981;
+      --mine-color: #ef4444;
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-color: #475569;
+      --shadow-color: rgba(99, 102, 241, 0.3);
+      --glow-color: rgba(99, 102, 241, 0.6);
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+      animation: backgroundPulse 30s ease-in-out infinite;
+    }
+    
+    @keyframes backgroundPulse {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      50% { transform: scale(1.1) rotate(2deg); opacity: 0.8; }
+    }
+    
+    /* Success/Warning Particles */
+    .particle-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .celebration-particle {
+      position: absolute;
+      pointer-events: none;
+      font-size: 20px;
+      animation: celebrate 3s ease-out infinite;
+    }
+    
+    .rock-particle {
+      color: var(--rock-color);
+      animation-delay: calc(var(--delay) * 0.2s);
+    }
+    
+    .mine-particle {
+      color: var(--mine-color);
+      animation-delay: calc(var(--delay) * 0.3s);
+    }
+    
+    @keyframes celebrate {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .results-card {
+      background: rgba(30, 41, 59, 0.9);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 3rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 60px var(--shadow-color);
+      position: relative;
+      overflow: hidden;
+      animation: cardReveal 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+    }
+    
+    .results-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.03),
+        transparent
+      );
+      animation: shimmer 4s infinite;
+    }
+    
+    @keyframes cardReveal {
+      0% {
+        opacity: 0;
+        transform: scale(0.8) rotateY(15deg);
+      }
+      70% {
+        transform: scale(1.05) rotateY(-2deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+      }
+    }
+    
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .header {
+      margin-bottom: 2rem;
+      animation: headerSlideDown 1s ease-out 0.3s both;
+    }
+    
+    .header h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+    
+    @keyframes headerSlideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .result-display {
+      margin-bottom: 2.5rem;
+      animation: resultPop 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.6s both;
+    }
+    
+    @keyframes resultPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-10deg);
+      }
+      70% {
+        transform: scale(1.1) rotate(2deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+    
+    .prediction-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 2.5rem;
+      border-radius: 20px;
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+    
+    .prediction-badge:hover {
+      transform: scale(1.05);
+    }
+    
+    .prediction-badge.rock {
+      background: linear-gradient(135deg, var(--rock-color), #059669);
+      color: white;
+      border: 2px solid var(--rock-color);
+      animation: rockGlow 2s ease-in-out infinite alternate;
+    }
+    
+    .prediction-badge.mine {
+      background: linear-gradient(135deg, var(--mine-color), #dc2626);
+      color: white;
+      border: 2px solid var(--mine-color);
+      animation: mineGlow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes rockGlow {
+      from { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 30px rgba(16, 185, 129, 0.3); }
+      to { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 50px rgba(16, 185, 129, 0.6); }
+    }
+    
+    @keyframes mineGlow {
+      from { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 30px rgba(239, 68, 68, 0.3); }
+      to { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 50px rgba(239, 68, 68, 0.6); }
+    }
+    
+    .prediction-icon {
+      font-size: 3rem;
+      margin-right: 1rem;
+      animation: iconBounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes iconBounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+    
+    .confidence-section {
+      margin-bottom: 2rem;
+      animation: fadeInUp 1s ease-out 0.9s both;
+    }
+    
+    .confidence-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    
+    .confidence-bar-container {
+      background: rgba(51, 65, 85, 0.6);
+      border-radius: 25px;
+      padding: 4px;
+      margin-bottom: 0.5rem;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .confidence-bar {
+      height: 40px;
+      border-radius: 21px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .confidence-bar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      animation: progressShine 2s infinite;
+    }
+    
+    @keyframes progressShine {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .confidence-percentage {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      z-index: 2;
+      position: relative;
+    }
+    
+    .legend {
+      background: rgba(51, 65, 85, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      animation: fadeInUp 1s ease-out 1.2s both;
+    }
+    
+    .legend h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .legend h3 i {
+      margin-right: 0.5rem;
+      color: var(--accent-color);
+    }
+    
+    .legend-items {
+      display: flex;
+      justify-content: space-around;
+      gap: 2rem;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+    
+    .legend-symbol {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+    }
+    
+    .rock-symbol {
+      background: var(--rock-color);
+      color: white;
+    }
+    
+    .mine-symbol {
+      background: var(--mine-color);
+      color: white;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      animation: fadeInUp 1s ease-out 1.5s both;
+    }
+    
+    .action-btn {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      font-family: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .action-btn i {
+      margin-right: 0.5rem;
+    }
+    
+    .primary-btn {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+      color: white;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    
+    .primary-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+    
+    .secondary-btn {
+      background: rgba(51, 65, 85, 0.6);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+    }
+    
+    .secondary-btn:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Status indicator */
+    .status-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      animation: statusPulse 2s infinite;
+    }
+    
+    .status-success {
+      background: var(--rock-color);
+    }
+    
+    .status-warning {
+      background: var(--mine-color);
+    }
+    
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .results-card {
+        padding: 2rem;
+      }
+      
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .prediction-badge {
+        font-size: 1.5rem;
+        padding: 1rem 2rem;
+      }
+      
+      .prediction-icon {
+        font-size: 2rem;
+        margin-right: 0.5rem;
+      }
+      
+      .actions {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .legend-items {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .prediction-badge {
+        font-size: 1.2rem;
+        padding: 0.8rem 1.5rem;
+      }
+      
+      .confidence-bar {
+        height: 35px;
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Prediction Result</h1>
+  <!-- Celebration Particles -->
+  <div class="particle-container" id="particleContainer"></div>
 
-  <p><strong>Prediction:</strong> {{ prediction }}</p>
+  <div class="container">
+    <div class="results-card">
+      <div class="status-indicator status-success" id="statusIndicator"></div>
+      
+      <div class="header">
+        <h1><i class="fas fa-chart-line"></i> Analysis Complete</h1>
+      </div>
+      
+      <div class="result-display">
+        <div class="prediction-badge rock" id="predictionBadge">
+          <i class="fas fa-mountain prediction-icon" id="predictionIcon"></i>
+          <span id="predictionText">ROCK</span>
+        </div>
+      </div>
+      
+      <!-- Confidence Section (only show if probability is available) -->
+      {% if probability is not none %}
+      <div class="confidence-section">
+        <div class="confidence-label">
+          <i class="fas fa-gauge-high"></i> Confidence Level
+        </div>
+        <div class="confidence-bar-container">
+          <div class="confidence-bar" id="confidenceBar">
+            <span class="confidence-percentage" id="confidenceText">0%</span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      
+      <div class="legend">
+        <h3>
+          <i class="fas fa-info-circle"></i>
+          Classification Legend
+        </h3>
+        <div class="legend-items">
+          <div class="legend-item">
+            <div class="legend-symbol rock-symbol">R</div>
+            <span>Rock - Natural geological formation</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-symbol mine-symbol">M</div>
+            <span>Mine - Metallic object or explosive device</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="actions">
+        <a href="/input" class="action-btn primary-btn">
+          <i class="fas fa-redo"></i>
+          New Analysis
+        </a>
+        <a href="/" class="action-btn secondary-btn">
+          <i class="fas fa-home"></i>
+          Home
+        </a>
+      </div>
+    </div>
+  </div>
 
-  {% if probability is not none %}
-    <p><strong>Confidence:</strong> {{ '%.2f'|format(probability*100) }}%</p>
-  {% endif %}
-
-  <p><strong>Legend:</strong> R = Rock, M = Mine</p>
-
-  <a href="/input">Try another input</a><br>
-  <a href="/">Back to Welcome Page</a>
+  <script>
+    // Simulate template variables for demo
+    const prediction = "{{ prediction }}" || "R"; // R for Rock, M for Mine
+    const probability = {{ probability if probability is not none else 'null' }} || 0.85;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set up prediction display
+      const predictionBadge = document.getElementById('predictionBadge');
+      const predictionIcon = document.getElementById('predictionIcon');
+      const predictionText = document.getElementById('predictionText');
+      const statusIndicator = document.getElementById('statusIndicator');
+      
+      // Configure based on prediction
+      if (prediction === 'M') {
+        predictionBadge.className = 'prediction-badge mine';
+        predictionIcon.className = 'fas fa-bomb prediction-icon';
+        predictionText.textContent = 'MINE';
+        statusIndicator.className = 'status-indicator status-warning';
+        createParticles('mine');
+      } else {
+        predictionBadge.className = 'prediction-badge rock';
+        predictionIcon.className = 'fas fa-mountain prediction-icon';
+        predictionText.textContent = 'ROCK';
+        statusIndicator.className = 'status-indicator status-success';
+        createParticles('rock');
+      }
+      
+      // Animate confidence bar if probability exists
+      if (probability !== null) {
+        setTimeout(() => {
+          animateConfidenceBar(probability);
+        }, 1200);
+      }
+      
+      // Add action button hover effects
+      const actionBtns = document.querySelectorAll('.action-btn');
+      actionBtns.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-3px) scale(1.02)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+          this.style.transform = '';
+        });
+      });
+    });
+    
+    function animateConfidenceBar(confidence) {
+      const confidenceBar = document.getElementById('confidenceBar');
+      const confidenceText = document.getElementById('confidenceText');
+      const percentage = Math.round(confidence * 100);
+      
+      // Set color based on prediction type
+      if (prediction === 'M') {
+        confidenceBar.style.background = `linear-gradient(135deg, var(--mine-color), #dc2626)`;
+      } else {
+        confidenceBar.style.background = `linear-gradient(135deg, var(--rock-color), #059669)`;
+      }
+      
+      // Animate width
+      confidenceBar.style.width = percentage + '%';
+      
+      // Animate percentage counter
+      let current = 0;
+      const increment = percentage / 30; // 30 frames for smooth animation
+      
+      const counter = setInterval(() => {
+        current += increment;
+        if (current >= percentage) {
+          current = percentage;
+          clearInterval(counter);
+        }
+        confidenceText.textContent = Math.round(current) + '%';
+      }, 50);
+    }
+    
+    function createParticles(type) {
+      const container = document.getElementById('particleContainer');
+      const particleCount = 15;
+      const icons = type === 'rock' ? ['🏔️', '⛰️', '🗿', '💎'] : ['💣', '⚠️', '🚨', '⛔'];
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = `celebration-particle ${type}-particle`;
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.setProperty('--delay', i);
+        particle.textContent = icons[Math.floor(Math.random() * icons.length)];
+        particle.style.animationDelay = (Math.random() * 3) + 's';
+        particle.style.animationDuration = (3 + Math.random() * 2) + 's';
+        
+        container.appendChild(particle);
+        
+        // Remove particle after animation
+        setTimeout(() => {
+          if (particle.parentNode) {
+            particle.parentNode.removeChild(particle);
+          }
+        }, 6000);
+      }
+    }
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        window.location.href = '/input';
+      } else if (e.key === 'Escape') {
+        window.location.href = '/';
+      }
+    });
+  </script>
 </body>
 </html>
