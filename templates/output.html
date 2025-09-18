@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Prediction Result</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <h1>Prediction Result</h1>
+
+  <p><strong>Prediction:</strong> {{ prediction }}</p>
+
+  {% if probability is not none %}
+    <p><strong>Confidence:</strong> {{ '%.2f'|format(probability*100) }}%</p>
+  {% endif %}
+
+  <p><strong>Legend:</strong> R = Rock, M = Mine</p>
+
+  <a href="/input">Try another input</a><br>
+  <a href="/">Back to Welcome Page</a>
+</body>
+</html>

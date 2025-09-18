@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Input Features</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <h1>Input Sonar Features</h1>
+  <p>Enter exactly 60 comma-separated numeric values (same format as the Sonar dataset).</p>
+
+  {% if error %}
+    <p style="color:red;">{{ error }}</p>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    <label for="features">Paste comma-separated values here:</label><br>
+    <textarea id="features" name="features" rows="6" cols="80" placeholder="0.02,0.0371,0.0428,..."></textarea><br><br>
+
+    <p>OR upload a file (CSV or TXT) containing the 60 values:</p>
+    <input type="file" name="file" accept=".csv,.txt"><br><br>
+
+    <button type="submit">Predict</button>
+  </form>
+
+  <h3>Sample Input (60 values)</h3>
+  <pre>
+0.02,0.0371,0.
