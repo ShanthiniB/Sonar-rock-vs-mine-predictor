@@ -17,7 +17,7 @@ with open(MODEL_PATH, 'rb') as f:
 @app.route('/')
 def welcome():
     # Welcome.HTML will collect user info and link to input page
-    return render_template('Welcome.HTML')
+    return render_template('welcome.html')
 
 
 @app.route('/input', methods=['GET', 'POST'])
@@ -33,7 +33,7 @@ def user_input():
                 parts = [p.strip() for p in features_text.split(',') if p.strip() != '']
                 arr = [float(x) for x in parts]
             except Exception as e:
-                return render_template('input.HTML', error='Error parsing numbers: ' + str(e))
+                return render_template('input.html', error='Error parsing numbers: ' + str(e))
 
         elif uploaded and uploaded.filename != '':
             # If file uploaded
@@ -42,13 +42,13 @@ def user_input():
                 parts = [p.strip() for p in content.replace('\n', ',').split(',') if p.strip() != '']
                 arr = [float(x) for x in parts]
             except Exception as e:
-                return render_template('input.HTML', error='Error parsing uploaded file: ' + str(e))
+                return render_template('input.hmtl', error='Error parsing uploaded file: ' + str(e))
         else:
-            return render_template('input.HTML', error='Please enter values or upload a file.')
+            return render_template('input.html', error='Please enter values or upload a file.')
 
         # Validate 60 features
         if len(arr) != 60:
-            return render_template('input.HTML', error=f'Expected 60 values, got {len(arr)}.')
+            return render_template('input.html', error=f'Expected 60 values, got {len(arr)}.')
 
         # Prepare input for prediction
         X_in = np.array(arr).reshape(1, -1)
@@ -61,9 +61,9 @@ def user_input():
 
         label = 'R (Rock)' if pred.upper() == 'R' else 'M (Mine)' if pred.upper() == 'M' else str(pred)
 
-        return render_template('output.HTML', prediction=label, probability=prob)
+        return render_template('output.html', prediction=label, probability=prob)
 
-    return render_template('input.HTML')
+    return render_template('input.html')
 
 
 if __name__ == '__main__':
